@@ -73,15 +73,6 @@ public class TankWarsView extends SurfaceView implements Runnable {
         screenX = x;
         screenY = y;
 
-        /**
-         * TODO HEYYY KEV
-         *
-         *  The controls id seems to be available from here
-         */
-
-
-
-
         Log.d("TANKU", "ArrayMap control down: " + controls.get("down"));
 
 

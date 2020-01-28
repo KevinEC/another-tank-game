@@ -38,8 +38,6 @@ public class TankWarsActivity extends Activity {
         controls.put("down", (Button)findViewById(R.id.controls_down));
         controls.put("fire", (Button)findViewById(R.id.controls_fire));
 
-        Log.d("TANKU", "ArrayMap control left: " + (Button)findViewById(R.id.controls_down));
-
         tankWarsView = new TankWarsView(this, size.x, size.y, controls);
         setContentView(tankWarsView);
         addContentView(controlsView, lp);
