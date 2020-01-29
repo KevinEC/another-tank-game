@@ -8,16 +8,26 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.util.Log;
+import android.util.Pair;
 import android.view.animation.DecelerateInterpolator;
 
-import androidx.annotation.Nullable;
+import java.util.ArrayList;
 
 public class PlayerTank {
-    TankWarsActivity activity;
 
-    RectF rect;
+    public final int LEFT = 1;
+    public final int RIGHT = 2;
+    public final int UP = 3;
+    public final int DOWN = 4;
+    public final int FIRE = 5;
+
+    private TankWarsActivity activity;
+
+    private RectF rect;
     private Bitmap bitmap;
     private Bitmap bitmapOrigin;
+    private float bitmapWidth;
+    private float bitmapHeight;
 
     private float width, height;
 
@@ -27,17 +37,13 @@ public class PlayerTank {
 
     private float tankSpeed;
 
-    public final int LEFT = 1;
-    public final int RIGHT = 2;
-    public final int UP = 3;
-    public final int DOWN = 4;
-    public final int FIRE = 5;
+    private ArrayList<Bullet> playerBullets;
 
     private boolean moving = false;
     private boolean parseMovementInput = true;
     // int representing the current direction.
     // Initial direction UP.
-    private int tankDirection = UP;
+    private int playerInput = UP;
     private int tankRotation = 0;
 
     public PlayerTank(Context context, int screenX, int screenY) {
@@ -45,17 +51,15 @@ public class PlayerTank {
         mScreenX = screenX;
         mScreenY = screenY;
         rect = new RectF();
-        width = screenX / 10;
-        height = screenY / 10;
+        bitmapWidth = width = screenX / 10;
+        bitmapHeight = height = screenY / 10;
         x = screenX / 2;
         y = screenY / 2;
         tankSpeed = 350;
-
-
+        playerBullets = new ArrayList<>();
 
 
         bitmapOrigin = BitmapFactory.decodeResource(context.getResources(), R.drawable.tank2);
-
         // Scale bitmap to tank size
         // tuck away a copy of the original rotate position
         bitmapOrigin = Bitmap.createScaledBitmap(bitmapOrigin, (int) (width), (int) (height), false);
@@ -64,8 +68,9 @@ public class PlayerTank {
     }
 
     public void update(long fps) {
+        // only one of these should be able to happen
         if (moving) {
-            switch (tankDirection) {
+            switch (playerInput) {
                 case LEFT:
                     handlePlayerMovement("x", -tankSpeed / fps);
                     setTankDirection(180);
@@ -83,6 +88,9 @@ public class PlayerTank {
                     setTankDirection(90);
                     break;
             }
+            if (playerInput == FIRE) {
+                shoot();
+            }
 
             // update rect according to the new coordinates
             rect.top = y;
@@ -91,6 +99,7 @@ public class PlayerTank {
             rect.right = x + width;
         }
     }
+
 
     // Getters & Setters
     public RectF getRect() {
@@ -101,6 +110,10 @@ public class PlayerTank {
         return bitmap;
     }
 
+    public ArrayList<Bullet> getPlayerBullets() {
+        return playerBullets;
+    }
+
     public float getX() {
         return x;
     }
@@ -109,33 +122,34 @@ public class PlayerTank {
         return y;
     }
 
-    public void setCoordinate(String coordinate, float value){
-        if(coordinate.equals("x")) x = value;
-        else if(coordinate.equals("y")) y = value;
+    public void setCoordinate(String coordinate, float value) {
+        if (coordinate.equals("x")) x = value;
+        else if (coordinate.equals("y")) y = value;
         else Log.e("setCoordinate", "invalid coordinate. Only x and y are valid identifiers");
     }
-    public float getCoordinate(String coordinate){
-        if(coordinate.equals("x")) return getX();
+
+    public float getCoordinate(String coordinate) {
+        if (coordinate.equals("x")) return getX();
         else return getY();
     }
 
-    public void setDirectionState(int state) {
-        tankDirection = state;
-    }
+    public void setMoving(boolean moving) { this.moving = moving; }
 
-    public void setMoving(boolean state) {
-        moving = state;
+    public void setPlayerInput(int state) {
+        Log.d("bug", "state set to: " + state);
+        Log.d("bug", "current (x,y): (" + x + ", " + y + ")");
+        playerInput = state;
     }
 
     private void handlePlayerMovement(String coordinate, float direction) {
         float originCoordinate;
-
-        if(coordinate.equals("x")) originCoordinate = x;
+        // Determine which coordinate to bg handled
+        if (coordinate.equals("x")) originCoordinate = x;
         else originCoordinate = y;
 
+        // Surface collision logic
         if (parseMovementInput) {
             if (screenEdgeDetected()) {
-                Log.d("Collision", "edge detected");
                 bouncePlayerBack(coordinate, direction);
             } else {
                 float newCoordinate = calcCoordinate(originCoordinate, direction);
@@ -151,6 +165,14 @@ public class PlayerTank {
     private void setTankDirection(int rotation) {
         // if the new rotation value is different from the previous one
         if (rotation != tankRotation) {
+            // swap width and height according to rotation
+            if (rotation == 0 || rotation == 180) {
+                width = bitmapWidth;
+                height = bitmapHeight;
+            } else {
+                width = bitmapHeight;
+                height = bitmapWidth;
+            }
             Matrix rotationMatrix = new Matrix();
             rotationMatrix.postRotate(rotation);
             bitmap = Bitmap.createBitmap(bitmapOrigin, 0, 0, bitmapOrigin.getWidth(), bitmapOrigin.getHeight(), rotationMatrix, true);
@@ -168,12 +190,12 @@ public class PlayerTank {
         else if (x < 0) {
             onEdge = true;
         }
-        //top
+        //bottom
         else if (y + getRect().height() > mScreenY) {
             onEdge = true;
         }
-        //bottom
-        else if (y - getRect().height() < 0) {
+        //top
+        else if (y < 0) {
             onEdge = true;
         }
         return onEdge;
@@ -183,37 +205,29 @@ public class PlayerTank {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Log.d("Collision", "bouncePlayerBack method start");
                 DecelerateInterpolator easeOut = new DecelerateInterpolator(1.0f);
-
                 float startValue = getCoordinate(coordinate);
                 float endValue = getCoordinate(coordinate) + ((-1) * Math.signum(direction)) * 20;
-                Log.d("Collision", "animating from: " + startValue + " to " + endValue);
 
                 final ValueAnimator wallAnimator = ValueAnimator.ofFloat(startValue, endValue);
-
                 wallAnimator.setInterpolator(easeOut);
-
 
                 wallAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
                         float value = (float) wallAnimator.getAnimatedValue();
                         setCoordinate(coordinate, value);
-                        Log.d("Collision", "updating " + coordinate + " to: " + value);
                     }
                 });
                 wallAnimator.addListener(new ValueAnimator.AnimatorListener() {
                     @Override
                     public void onAnimationStart(Animator animation) {
                         parseMovementInput = false;
-                        Log.d("Collision", "animation started");
                     }
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         parseMovementInput = true;
-                        Log.d("Collision", "animation ended. Final values x: " + x + "y: " + y);
                     }
 
                     @Override
@@ -223,13 +237,37 @@ public class PlayerTank {
 
                     @Override
                     public void onAnimationRepeat(Animator animation) {
-
                     }
                 });
 
-                Log.d("Collision", "new Thread run");
                 wallAnimator.start();
             }
         });
+    }
+
+    private void shoot() {
+        Pair bulletXY = calcBulletCoordinate();
+        Bullet newBullet = new Bullet((float) bulletXY.first, (float) bulletXY.second, tankRotation);
+        playerBullets.add(newBullet);
+    }
+
+    private Pair<Float, Float> calcBulletCoordinate() {
+        float bulletX, bulletY;
+
+        if (tankRotation == 0) {
+            bulletY = y + height / 2;
+            bulletX = x + width;
+        } else if (tankRotation == 180) {
+            bulletY = y + height / 2;
+            bulletX = x;
+        } else if (tankRotation == 90) {
+            bulletX = x + width / 2;
+            bulletY = y + height;
+        } else {
+            bulletX = x + width / 2;
+            bulletY = y;
+        }
+
+        return new Pair<>(bulletX, bulletY);
     }
 }

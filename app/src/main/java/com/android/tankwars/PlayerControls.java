@@ -49,19 +49,19 @@ public class PlayerControls {
             // determine which button is pressed
 
             if(v.getId() == mLeft.getId()) {
-                mPlayerTank.setDirectionState(mPlayerTank.LEFT);
+                mPlayerTank.setPlayerInput(mPlayerTank.LEFT);
             }
             else if(v.getId() == mRight.getId()) {
-                mPlayerTank.setDirectionState(mPlayerTank.RIGHT);
+                mPlayerTank.setPlayerInput(mPlayerTank.RIGHT);
             }
             else if(v.getId() == mUp.getId()) {
-                mPlayerTank.setDirectionState(mPlayerTank.UP);
+                mPlayerTank.setPlayerInput(mPlayerTank.UP);
             }
             else if(v.getId() == mDown.getId()) {
-                mPlayerTank.setDirectionState(mPlayerTank.DOWN);
+                mPlayerTank.setPlayerInput(mPlayerTank.DOWN);
             }
             else if(v.getId() == mFire.getId()) {
-                mPlayerTank.setDirectionState(mPlayerTank.FIRE);
+                mPlayerTank.setPlayerInput(mPlayerTank.FIRE);
             }
             // none of the buttons were pressed
             else {

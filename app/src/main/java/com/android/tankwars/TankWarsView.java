@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class TankWarsView extends SurfaceView implements Runnable {
     Context context;
@@ -52,9 +53,6 @@ public class TankWarsView extends SurfaceView implements Runnable {
 
     //PlayerControls
     private PlayerControls playerControls;
-
-    // Player bullet
-    private Bullet bullet;
 
     // FX
     private SoundPool soundPool;
@@ -140,10 +138,15 @@ public class TankWarsView extends SurfaceView implements Runnable {
             canvas = holder.lockCanvas();
 
             // color background and set brush color
-            canvas.drawColor(Color.argb(255, 26, 128, 182));
+            canvas.drawColor(Color.argb(255, 86, 128, 182));
             paint.setColor(Color.argb(255, 255, 255, 255));
 
+            // draw player
             canvas.drawBitmap(playerTank.getBitmap(), playerTank.getX(), playerTank.getY(), paint);
+            //draw bullets
+            for(Bullet playerBullet : playerTank.getPlayerBullets()) {
+                canvas.drawRect(playerBullet.getRect(), new Paint(Color.RED));
+            }
 
             // Draw everything to the screen
             holder.unlockCanvasAndPost(canvas);
