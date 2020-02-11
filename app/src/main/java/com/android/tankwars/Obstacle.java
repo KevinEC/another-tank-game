@@ -14,6 +14,7 @@ public class Obstacle {
         this.width = width;
         this.height = height;
 
+        rect = new RectF();
         setRect();
     }
 
@@ -27,7 +28,7 @@ public class Obstacle {
         rect.left = x;
         rect.right = x + width;
     }
-    private RectF getRect(){ return rect; }
+    public RectF getRect(){ return rect; }
     private float getX(){ return x; }
     private float getY(){ return y; }
 

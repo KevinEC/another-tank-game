@@ -58,6 +58,9 @@ public class TankWarsView extends SurfaceView implements Runnable {
     private SoundPool soundPool;
     private int shootID = -1;
 
+    // Map Obstacles
+    private ArrayList<Obstacle> mapObstacles;
+
 
     public TankWarsView(Context context, int x, int y, ArrayMap<String, Button> controls) {
         super(context);
@@ -68,11 +71,9 @@ public class TankWarsView extends SurfaceView implements Runnable {
         holder = getHolder();
         paint = new Paint();
 
-        screenX = x;
-        screenY = y;
+        screenX = x;  screenY = y;
 
-        Log.d("TANKU", "ArrayMap control down: " + controls.get("down"));
-
+        mapObstacles = new ArrayList<Obstacle>();
 
         // deprecated but still works
         soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
@@ -95,8 +96,12 @@ public class TankWarsView extends SurfaceView implements Runnable {
     private void prepareLevel() {
 
         playerTank = new PlayerTank(context, screenX, screenY);
-
         playerControls = new PlayerControls(mControls, playerTank);
+
+        mapObstacles.add(new Obstacle(400, 200, 30, 200));
+        mapObstacles.add(new Obstacle(1200, 800, 300, 30));
+        mapObstacles.add(new Obstacle(1300, 300, 200, 200));
+
 
     }
 
@@ -109,8 +114,7 @@ public class TankWarsView extends SurfaceView implements Runnable {
 
             // Update the frame
             if (!paused) {
-                update();
-                playerTank.update(fps);
+                update(fps);
             }
 
             // Draw the frame
@@ -124,8 +128,11 @@ public class TankWarsView extends SurfaceView implements Runnable {
         }
     }
 
-    private void update() {
+    private void update(long fps) {
         boolean lost = false;
+
+        playerTank.update(fps);
+        updateObstacles(fps);
 
         if (lost) {
             prepareLevel();
@@ -143,10 +150,16 @@ public class TankWarsView extends SurfaceView implements Runnable {
             // draw player
             canvas.drawBitmap(playerTank.getBitmap(), playerTank.getX(), playerTank.getY(), paint);
 
-            paint.setColor(Color.argb(255, 255, 100, 100));
             //draw playerBullets
+            paint.setColor(Color.argb(255, 255, 100, 100));
             for(Bullet playerBullet : playerTank.getPlayerBullets()) {
                 canvas.drawRect(playerBullet.getRect(), paint);
+            }
+
+            // draw obstacles
+            paint.setColor(Color.argb(255, 100, 100, 50));
+            for(Obstacle obstacle: mapObstacles) {
+                canvas.drawRect(obstacle.getRect(), paint);
             }
 
             // Draw everything to the screen
@@ -167,6 +180,12 @@ public class TankWarsView extends SurfaceView implements Runnable {
         playing = true;
         gameThread = new Thread(this);
         gameThread.start();
+    }
+
+    private void updateObstacles(long fps) {
+        for (Obstacle obstacle : mapObstacles){
+            obstacle.update(fps);
+        }
     }
 
     @Override
