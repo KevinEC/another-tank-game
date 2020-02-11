@@ -95,7 +95,6 @@ public class TankWarsView extends SurfaceView implements Runnable {
     private void prepareLevel() {
 
         playerTank = new PlayerTank(context, screenX, screenY);
-        playerTank.update(fps);
 
         playerControls = new PlayerControls(mControls, playerTank);
 
@@ -143,9 +142,11 @@ public class TankWarsView extends SurfaceView implements Runnable {
 
             // draw player
             canvas.drawBitmap(playerTank.getBitmap(), playerTank.getX(), playerTank.getY(), paint);
-            //draw bullets
+
+            paint.setColor(Color.argb(255, 255, 100, 100));
+            //draw playerBullets
             for(Bullet playerBullet : playerTank.getPlayerBullets()) {
-                canvas.drawRect(playerBullet.getRect(), new Paint(Color.RED));
+                canvas.drawRect(playerBullet.getRect(), paint);
             }
 
             // Draw everything to the screen

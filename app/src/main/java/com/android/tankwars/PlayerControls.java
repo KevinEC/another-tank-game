@@ -17,7 +17,7 @@ public class PlayerControls {
     private Button mFire;
     private ArrayMap<String, Button> mControls;
 
-    PlayerControls (ArrayMap<String, Button> controls, PlayerTank playerTank) {
+    PlayerControls(ArrayMap<String, Button> controls, PlayerTank playerTank) {
         mPlayerTank = playerTank;
         mControls = controls;
         mLeft = controls.get("left");
@@ -40,33 +40,39 @@ public class PlayerControls {
             Log.d("PlayerControls", "touch registered");
 
             // set playerTank move state determined on touch action
-            if(e.getAction() == MotionEvent.ACTION_DOWN) {
-                mPlayerTank.setMoving(true);
-            } else if(e.getAction() == MotionEvent.ACTION_UP) {
-                mPlayerTank.setMoving(false);
+            if (e.getAction() == MotionEvent.ACTION_DOWN) {
+
+                // determine which button is pressed
+                if (v.getId() == mLeft.getId()) {
+                    mPlayerTank.setMoving(true);
+                    mPlayerTank.setPlayerInput(mPlayerTank.LEFT);
+                } else if (v.getId() == mRight.getId()) {
+                    mPlayerTank.setMoving(true);
+                    mPlayerTank.setPlayerInput(mPlayerTank.RIGHT);
+                } else if (v.getId() == mUp.getId()) {
+                    mPlayerTank.setMoving(true);
+                    mPlayerTank.setPlayerInput(mPlayerTank.UP);
+                } else if (v.getId() == mDown.getId()) {
+                    mPlayerTank.setMoving(true);
+                    mPlayerTank.setPlayerInput(mPlayerTank.DOWN);
+                }
+
+                // should be able to be pressed simultaneously
+                if (v.getId() == mFire.getId()) {
+                    mPlayerTank.setFireInput(true);
+                }
+            } else if (e.getAction() == MotionEvent.ACTION_UP) {
+                if (v.getId() == mLeft.getId() || v.getId() == mRight.getId() ||
+                        v.getId() == mUp.getId() || v.getId() == mDown.getId()) {
+                    mPlayerTank.setMoving(false);
+                }
+
+
+                if (v.getId() == mFire.getId()) {
+                    mPlayerTank.setFireInput(false);
+                }
             }
 
-            // determine which button is pressed
-
-            if(v.getId() == mLeft.getId()) {
-                mPlayerTank.setPlayerInput(mPlayerTank.LEFT);
-            }
-            else if(v.getId() == mRight.getId()) {
-                mPlayerTank.setPlayerInput(mPlayerTank.RIGHT);
-            }
-            else if(v.getId() == mUp.getId()) {
-                mPlayerTank.setPlayerInput(mPlayerTank.UP);
-            }
-            else if(v.getId() == mDown.getId()) {
-                mPlayerTank.setPlayerInput(mPlayerTank.DOWN);
-            }
-            else if(v.getId() == mFire.getId()) {
-                mPlayerTank.setPlayerInput(mPlayerTank.FIRE);
-            }
-            // none of the buttons were pressed
-            else {
-                return false;
-            }
 
             return true;
         }

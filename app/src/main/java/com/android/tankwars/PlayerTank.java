@@ -12,6 +12,10 @@ import android.util.Pair;
 import android.view.animation.DecelerateInterpolator;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import static java.lang.System.currentTimeMillis;
 
 public class PlayerTank {
 
@@ -45,6 +49,12 @@ public class PlayerTank {
     // Initial direction UP.
     private int playerInput = UP;
     private int tankRotation = 0;
+    private int direction;
+
+    private boolean firing = false;
+    private long fireCooldown = 150;
+    private  long fireCooldownFinish;
+    private long cooldown = 0;
 
     public PlayerTank(Context context, int screenX, int screenY) {
         activity = (TankWarsActivity) context;
@@ -88,16 +98,14 @@ public class PlayerTank {
                     setTankDirection(90);
                     break;
             }
-            if (playerInput == FIRE) {
-                shoot();
-            }
-
             // update rect according to the new coordinates
-            rect.top = y;
-            rect.bottom = y + height;
-            rect.left = x;
-            rect.right = x + width;
+            setRect();
         }
+        if(firing && cooldown == 0) fire();
+        updateFireCooldown();
+
+        // update player bullets
+        updateBullets(fps);
     }
 
 
@@ -106,8 +114,21 @@ public class PlayerTank {
         return rect;
     }
 
+    private void setRect() {
+        rect.top = y;
+        rect.bottom = y + height;
+        rect.left = x;
+        rect.right = x + width;
+    }
+
     public Bitmap getBitmap() {
         return bitmap;
+    }
+
+    private void updateBullets(long fps){
+        for (Bullet bullet : playerBullets) {
+            bullet.update(fps);
+        }
     }
 
     public ArrayList<Bullet> getPlayerBullets() {
@@ -125,7 +146,7 @@ public class PlayerTank {
     public void setCoordinate(String coordinate, float value) {
         if (coordinate.equals("x")) x = value;
         else if (coordinate.equals("y")) y = value;
-        else Log.e("setCoordinate", "invalid coordinate. Only x and y are valid identifiers");
+        else Log.e("error", "setCoordinate. Invalid coordinate. Only x and y are valid identifiers");
     }
 
     public float getCoordinate(String coordinate) {
@@ -136,9 +157,11 @@ public class PlayerTank {
     public void setMoving(boolean moving) { this.moving = moving; }
 
     public void setPlayerInput(int state) {
-        Log.d("bug", "state set to: " + state);
-        Log.d("bug", "current (x,y): (" + x + ", " + y + ")");
         playerInput = state;
+    }
+
+    public void setFireInput(boolean state) {
+        firing = state;
     }
 
     private void handlePlayerMovement(String coordinate, float direction) {
@@ -245,10 +268,24 @@ public class PlayerTank {
         });
     }
 
-    private void shoot() {
+    private void fire() {
         Pair bulletXY = calcBulletCoordinate();
         Bullet newBullet = new Bullet((float) bulletXY.first, (float) bulletXY.second, tankRotation);
         playerBullets.add(newBullet);
+        startFireCooldown();
+    }
+
+    private void startFireCooldown(){
+        fireCooldownFinish = System.currentTimeMillis() + fireCooldown;
+        cooldown = fireCooldown;
+    }
+
+    private void updateFireCooldown(){
+        if(cooldown > 0)
+            cooldown = fireCooldownFinish - System.currentTimeMillis();
+        else {
+            cooldown = 0;
+        }
     }
 
     private Pair<Float, Float> calcBulletCoordinate() {
@@ -270,4 +307,6 @@ public class PlayerTank {
 
         return new Pair<>(bulletX, bulletY);
     }
+
+
 }
