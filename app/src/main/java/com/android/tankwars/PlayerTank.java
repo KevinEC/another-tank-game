@@ -58,6 +58,7 @@ public class PlayerTank {
 
     public PlayerTank(Context context, int screenX, int screenY) {
         activity = (TankWarsActivity) context;
+
         mScreenX = screenX;
         mScreenY = screenY;
         rect = new RectF();
@@ -108,8 +109,15 @@ public class PlayerTank {
         updateBullets(fps);
     }
 
-
     // Getters & Setters
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
     public RectF getRect() {
         return rect;
     }
@@ -125,22 +133,14 @@ public class PlayerTank {
         return bitmap;
     }
 
-    private void updateBullets(long fps){
-        for (Bullet bullet : playerBullets) {
-            bullet.update(fps);
-        }
-    }
-
     public ArrayList<Bullet> getPlayerBullets() {
         return playerBullets;
     }
 
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
+    private void updateBullets(long fps){
+        for (Bullet bullet : playerBullets) {
+            bullet.update(fps);
+        }
     }
 
     public void setCoordinate(String coordinate, float value) {
@@ -272,6 +272,7 @@ public class PlayerTank {
         Pair bulletXY = calcBulletCoordinate();
         Bullet newBullet = new Bullet((float) bulletXY.first, (float) bulletXY.second, tankRotation);
         playerBullets.add(newBullet);
+
         startFireCooldown();
     }
 

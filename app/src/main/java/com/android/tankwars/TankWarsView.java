@@ -62,6 +62,11 @@ public class TankWarsView extends SurfaceView implements Runnable {
     private ArrayList<Obstacle> mapObstacles;
 
 
+    // Default Constructor
+    public TankWarsView(Context context){
+        super(context);
+    }
+
     public TankWarsView(Context context, int x, int y, ArrayMap<String, Button> controls) {
         super(context);
         this.context = context;
@@ -102,7 +107,7 @@ public class TankWarsView extends SurfaceView implements Runnable {
         mapObstacles.add(new Obstacle(1200, 800, 300, 30));
         mapObstacles.add(new Obstacle(1300, 300, 200, 200));
 
-
+        GameObject.allGameObjects.addAll(mapObstacles);
     }
 
     @Override
