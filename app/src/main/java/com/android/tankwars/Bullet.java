@@ -20,13 +20,18 @@ public class Bullet extends GameObject {
         id = ID; ID++;
         this.direction = direction;
         speed = 500.0f;
-
-
+        color = new Paint();
+        color.setColor(Color.argb(255, 255, 100, 100));
     }
 
     @Override
-    public void collision() {
+    public void collision(GameObject otherObject) {
+        speed = 0;
+        if(otherObject.getClass() == Obstacle.class)
+        {
 
+        }
+        toBeRemoved.add(this);
     }
 
     public void update(long fps){

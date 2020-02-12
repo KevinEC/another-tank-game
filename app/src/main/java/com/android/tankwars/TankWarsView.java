@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.widget.Button;
 
 import java.io.IOException;
@@ -137,7 +136,7 @@ public class TankWarsView extends SurfaceView implements Runnable {
         boolean lost = false;
 
         playerTank.update(fps);
-        updateObstacles(fps);
+        updateGameObjects(fps);
 
         if (lost) {
             prepareLevel();
@@ -156,15 +155,8 @@ public class TankWarsView extends SurfaceView implements Runnable {
             canvas.drawBitmap(playerTank.getBitmap(), playerTank.getX(), playerTank.getY(), paint);
 
             //draw playerBullets
-            paint.setColor(Color.argb(255, 255, 100, 100));
-            for(Bullet playerBullet : playerTank.getPlayerBullets()) {
-                canvas.drawRect(playerBullet.getRect(), paint);
-            }
-
-            // draw obstacles
-            paint.setColor(Color.argb(255, 100, 100, 50));
-            for(Obstacle obstacle: mapObstacles) {
-                canvas.drawRect(obstacle.getRect(), paint);
+            for(GameObject object: GameObject.allGameObjects) {
+                canvas.drawRect(object.getRect(), object.color);
             }
 
             // Draw everything to the screen
@@ -187,10 +179,13 @@ public class TankWarsView extends SurfaceView implements Runnable {
         gameThread.start();
     }
 
-    private void updateObstacles(long fps) {
-        for (Obstacle obstacle : mapObstacles){
-            obstacle.update(fps);
+    private void updateGameObjects(long fps) {
+        for (GameObject object : GameObject.allGameObjects){
+            object.update(fps);
         }
+        // remove GameObjects here to avoid ConcurrentModificationException
+        GameObject.allGameObjects.removeAll(GameObject.toBeRemoved);
+        GameObject.toBeRemoved.clear();
     }
 
     @Override

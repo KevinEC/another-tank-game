@@ -1,6 +1,7 @@
 package com.android.tankwars;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.Log;
 
@@ -15,7 +16,10 @@ public abstract class GameObject{
     protected float direction;
     protected float speed;
 
+    protected Paint color;
+
     protected static ArrayList<GameObject> allGameObjects = new ArrayList<>();
+    protected static ArrayList<GameObject> toBeRemoved = new ArrayList<>();
 
     GameObject(float x, float y, float width, float height){
         this.x = x;
@@ -27,7 +31,7 @@ public abstract class GameObject{
 
         allGameObjects.add(this);
     }
-    public abstract void collision();
+    public abstract void collision(GameObject otherObject);
 
     public abstract void update(long fps);
 
@@ -54,8 +58,7 @@ public abstract class GameObject{
         for (GameObject object : allGameObjects) {
             // don't compare to self
             if(!object.equals(this) && checkCollision(object.getRect())) {
-                Log.d("collision", "collision between gameobjects registered");
-                collision();
+                collision(object);
             }
         }
     }
