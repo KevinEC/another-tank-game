@@ -45,16 +45,16 @@ public class PlayerControls {
                 // determine which button is pressed
                 if (v.getId() == mLeft.getId()) {
                     mPlayerTank.setMoving(true);
-                    mPlayerTank.setPlayerInput(mPlayerTank.LEFT);
+                    mPlayerTank.setRotation(180);
                 } else if (v.getId() == mRight.getId()) {
                     mPlayerTank.setMoving(true);
-                    mPlayerTank.setPlayerInput(mPlayerTank.RIGHT);
+                    mPlayerTank.setRotation(0);
                 } else if (v.getId() == mUp.getId()) {
                     mPlayerTank.setMoving(true);
-                    mPlayerTank.setPlayerInput(mPlayerTank.UP);
+                    mPlayerTank.setRotation(270);
                 } else if (v.getId() == mDown.getId()) {
                     mPlayerTank.setMoving(true);
-                    mPlayerTank.setPlayerInput(mPlayerTank.DOWN);
+                    mPlayerTank.setRotation(90);
                 }
 
                 // should be able to be pressed simultaneously

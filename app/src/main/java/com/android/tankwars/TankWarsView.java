@@ -102,9 +102,26 @@ public class TankWarsView extends SurfaceView implements Runnable {
         playerTank = new PlayerTank(context, screenX, screenY);
         playerControls = new PlayerControls(mControls, playerTank);
 
+
+        Obstacle screenBorderTop = new Obstacle(0, 0, screenX, 1);
+        screenBorderTop.color.setColor(Color.argb(0, 100, 0,0));
+
+        Obstacle screenBorderBot = new Obstacle(0, screenY, screenX, 1);
+        screenBorderBot.color.setColor(Color.argb(0, 100, 0,0));
+
+        Obstacle screenBorderLeft = new Obstacle(0, 0, 1, screenY);
+        screenBorderLeft.color.setColor(Color.argb(0, 100, 0,0));
+
+        Obstacle screenBorderRight = new Obstacle(screenX, 0, 1, screenY);
+        screenBorderTop.color.setColor(Color.argb(0, 100, 0,0));
+
         mapObstacles.add(new Obstacle(400, 200, 30, 200));
         mapObstacles.add(new Obstacle(1200, 800, 300, 30));
         mapObstacles.add(new Obstacle(1300, 300, 200, 200));
+        mapObstacles.add(screenBorderTop);
+        mapObstacles.add(screenBorderBot);
+        mapObstacles.add(screenBorderLeft);
+        mapObstacles.add(screenBorderRight);
 
         GameObject.allGameObjects.addAll(mapObstacles);
     }
@@ -154,7 +171,7 @@ public class TankWarsView extends SurfaceView implements Runnable {
             // draw player
             canvas.drawBitmap(playerTank.getBitmap(), playerTank.getX(), playerTank.getY(), paint);
 
-            //draw playerBullets
+            //draw GameObjects
             for(GameObject object: GameObject.allGameObjects) {
                 canvas.drawRect(object.getRect(), object.color);
             }
@@ -182,6 +199,7 @@ public class TankWarsView extends SurfaceView implements Runnable {
     private void updateGameObjects(long fps) {
         for (GameObject object : GameObject.allGameObjects){
             object.update(fps);
+            object.setFps(fps);
         }
         // remove GameObjects here to avoid ConcurrentModificationException
         GameObject.allGameObjects.removeAll(GameObject.toBeRemoved);
