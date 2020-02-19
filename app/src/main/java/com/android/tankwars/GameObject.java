@@ -1,12 +1,18 @@
 package com.android.tankwars;
 
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.Log;
 import android.util.Pair;
 
 import java.util.ArrayList;
+import java.util.MissingFormatArgumentException;
 
 public abstract class GameObject{
+
+    // for debugging
+    RectF tempThisRect, tempOtherRect;
 
     protected long fps;
     protected float x, y;
@@ -22,6 +28,7 @@ public abstract class GameObject{
 
     protected static ArrayList<GameObject> allGameObjects = new ArrayList<>();
     protected static ArrayList<GameObject> toBeRemoved = new ArrayList<>();
+    protected static ArrayList<GameObject> toBeAdded = new ArrayList<>();
 
     GameObject(float x, float y, float width, float height){
         this.x = x;
@@ -31,34 +38,29 @@ public abstract class GameObject{
         this.height = height;
         rect = new RectF();
         setRect();
+        rotation = 0.0f;
+        setDirectionVector();
 
-        allGameObjects.add(this);
+        // This is to avoid ConcurrentModificationException.
+        toBeAdded.add(this);
     }
     public abstract void collision(GameObject otherObject);
 
     public abstract void update(long fps);
 
-    public boolean checkCollision(RectF otherRect){
-        return this.rect.intersect(otherRect);
+    public boolean checkCollision(GameObject otherObject){
+        return this.rect.intersect(otherObject.getRect());
     }
 
     protected void translate(long fps){
-        if(rotation == 0.0f) {
-            setCoordinate("x", getX() + speed/fps);
-        }
-        else if(rotation == 180.0f) {
-            setCoordinate("x", getX() - speed/fps);
-        }
-        else if(rotation == 90.0f) {
-            setCoordinate("y", getY() + speed/fps);
-        }
-        else if(rotation == 270.0f) {
-            setCoordinate("y", getY() - speed/fps);
-        }
+
+        float newX = getX() + (float) getDirectionVector().first * (speed/fps);
+        float newY = getY() + (float) getDirectionVector().second * (speed/fps);
+        setCoordinate(new Pair<>(newX, newY));
 
         for (GameObject object : allGameObjects) {
             // don't compare to self
-            if(!object.equals(this) && checkCollision(object.getRect())) {
+            if(!object.equals(this) && checkCollision(object)) {
                 collision(object);
             }
         }
@@ -101,6 +103,7 @@ public abstract class GameObject{
         float x = (float) Math.cos(Math.toRadians(rotation));
         float y = (float) Math.sin(Math.toRadians(rotation));
         directionVector = new Pair(x,y);
+        Log.d("Joystick", "directionVector: " + directionVector);
     }
 
     public Pair<Float,Float> getDirectionVector(){
@@ -120,5 +123,9 @@ public abstract class GameObject{
         rect.bottom = y + height;
         rect.left = x;
         rect.right = x + width;
+    }
+
+    public float getRotation() {
+        return rotation;
     }
 }

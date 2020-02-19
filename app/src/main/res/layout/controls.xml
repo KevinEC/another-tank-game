@@ -19,6 +19,13 @@
         app:layout_constraintRight_toRightOf="@+id/action_controls"
         app:layout_constraintStart_toStartOf="parent">
 
+        <io.github.controlwear.virtual.joystick.android.JoystickView
+            android:id="@+id/joystick"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:JV_fixedCenter="true"
+            />
+
         <Button
             android:id="@+id/controls_up"
             android:layout_width="wrap_content"

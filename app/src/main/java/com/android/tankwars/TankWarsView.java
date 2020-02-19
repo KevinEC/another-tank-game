@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.widget.Button;
 
 import java.io.IOException;
@@ -48,7 +49,7 @@ public class TankWarsView extends SurfaceView implements Runnable {
     private PlayerTank playerTank;
 
     //Control Buttons
-    private ArrayMap<String, Button> mControls;
+    private ArrayMap<String, View> mControls;
 
     //PlayerControls
     private PlayerControls playerControls;
@@ -66,7 +67,7 @@ public class TankWarsView extends SurfaceView implements Runnable {
         super(context);
     }
 
-    public TankWarsView(Context context, int x, int y, ArrayMap<String, Button> controls) {
+    public TankWarsView(Context context, int x, int y, ArrayMap<String, View> controls) {
         super(context);
         this.context = context;
 
@@ -169,11 +170,14 @@ public class TankWarsView extends SurfaceView implements Runnable {
             paint.setColor(Color.argb(255, 255, 255, 255));
 
             // draw player
-            canvas.drawBitmap(playerTank.getBitmap(), playerTank.getX(), playerTank.getY(), paint);
+            //canvas.drawBitmap(playerTank.getBitmap(), playerTank.getX(), playerTank.getY(), paint);
 
             //draw GameObjects
             for(GameObject object: GameObject.allGameObjects) {
+                canvas.save();
+                canvas.rotate(object.getRotation(), object.getRect().centerX(), object.getRect().centerY());
                 canvas.drawRect(object.getRect(), object.color);
+                canvas.restore();
             }
 
             // Draw everything to the screen
@@ -197,11 +201,14 @@ public class TankWarsView extends SurfaceView implements Runnable {
     }
 
     private void updateGameObjects(long fps) {
+        // add GamObjects here to avoid ConcurrentModificationException.
+        GameObject.allGameObjects.addAll(GameObject.toBeAdded);
+        GameObject.toBeAdded.clear();
         for (GameObject object : GameObject.allGameObjects){
             object.update(fps);
             object.setFps(fps);
         }
-        // remove GameObjects here to avoid ConcurrentModificationException
+        // remove GameObjects here to avoid ConcurrentModificationException.
         GameObject.allGameObjects.removeAll(GameObject.toBeRemoved);
         GameObject.toBeRemoved.clear();
     }

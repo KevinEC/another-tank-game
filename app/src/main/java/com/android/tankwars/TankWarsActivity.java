@@ -12,10 +12,12 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 
+import io.github.controlwear.virtual.joystick.android.JoystickView;
+
 public class TankWarsActivity extends Activity {
 
     TankWarsView tankWarsView;
-    ArrayMap<String, Button> controls;
+    ArrayMap<String, View> controls;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,11 +34,14 @@ public class TankWarsActivity extends Activity {
         addContentView(controlsView, lp);
 
         controls = new ArrayMap<>();
-        controls.put("left", (Button)findViewById(R.id.controls_left));
-        controls.put("right", (Button)findViewById(R.id.controls_right));
-        controls.put("up", (Button)findViewById(R.id.controls_up));
-        controls.put("down", (Button)findViewById(R.id.controls_down));
-        controls.put("fire", (Button)findViewById(R.id.controls_fire));
+        controls.put("left", findViewById(R.id.controls_left));
+        controls.put("right",findViewById(R.id.controls_right));
+        controls.put("up", findViewById(R.id.controls_up));
+        controls.put("down", findViewById(R.id.controls_down));
+        controls.put("fire", findViewById(R.id.controls_fire));
+        controls.put("joystick", findViewById(R.id.joystick));
+        controls.put("controlArea", findViewById(R.id.movement_controls));
+
 
         tankWarsView = new TankWarsView(this, size.x, size.y, controls);
         setContentView(tankWarsView);

@@ -50,16 +50,18 @@ public class PlayerTank extends GameObject{
     private long fireCooldown = 150;
     private  long fireCooldownFinish;
     private long cooldown = 0;
+    private float speedFactor;
 
     public PlayerTank(Context context, int screenX, int screenY) {
-        super(screenX / 2, screenY / 2, screenX / 10, screenY / 10);
+        super(screenX / 2, screenY / 2, screenY / 10, screenY / 10);
         activity = (TankWarsActivity) context;
         mScreenX = screenX; mScreenY = screenY;
         bitmapWidth = width; bitmapHeight = height;
-        x = screenX / 2;
+        x = screenY / 2;
         y = screenY / 2;
 
-        speed = 350;
+        speedFactor = 0.0f;
+        speed = 0.0f * speedFactor;
         playerBullets = new ArrayList<>();
         color = new Paint();
         color.setColor(Color.argb(255, 20, 200, 40));
@@ -108,25 +110,6 @@ public class PlayerTank extends GameObject{
         firing = state;
     }
 
-    public void setRotation(int rotation) {
-        // if the new rotation value is different from the previous one
-        if (rotation != this.rotation) {
-            // swap width and height according to rotation
-            if (rotation == 0 || rotation == 180) {
-                width = bitmapWidth;
-                height = bitmapHeight;
-            } else {
-                width = bitmapHeight;
-                height = bitmapWidth;
-            }
-            Matrix rotationMatrix = new Matrix();
-            rotationMatrix.postRotate(rotation);
-            bitmap = Bitmap.createBitmap(bitmapOrigin, 0, 0, bitmapOrigin.getWidth(), bitmapOrigin.getHeight(), rotationMatrix, true);
-            this.rotation = rotation;
-            setDirectionVector();
-        }
-    }
-
     private void bouncePlayerBack() {
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -135,9 +118,6 @@ public class PlayerTank extends GameObject{
 
                 final float xEndValue = getX() + (-1*directionVector.first) * 30;
                 final float yEndValue = getY() + (-1*directionVector.second) * 30;
-
-                Log.d("Collision", "directionVector: " + directionVector);
-                Log.d("Collision", "xEndValue: " + xEndValue + " yEndValue: " + yEndValue);
 
                 final ValueAnimator xAnim = ValueAnimator.ofFloat(getX(), xEndValue);
                 final ValueAnimator yAnim = ValueAnimator.ofFloat(getY(), yEndValue);
@@ -203,20 +183,20 @@ public class PlayerTank extends GameObject{
     private Pair<Float, Float> calcBulletCoordinate() {
         float bulletX, bulletY;
 
-        if (rotation == 0) {
-            bulletY = y + height / 2;
-            bulletX = x + width;
-        } else if (rotation == 180) {
-            bulletY = y + height / 2;
-            bulletX = x;
-        } else if (rotation == 90) {
-            bulletX = x + width / 2;
-            bulletY = y + height;
-        } else {
-            bulletX = x + width / 2;
-            bulletY = y;
-        }
+        // 100 pixels worth of padding implemented to go around the poor collision detection on
+        // rotated rectangles
+        /* TODO
+        *  Possible Solution to this could be to make the Tank Square.
+        * */
+        bulletX = getRect().centerX() + getDirectionVector().first * (width+100.0f)/2.0f;
+        bulletY = getRect().centerY() + getDirectionVector().second * (height+100.0f)/2.0f;
 
         return new Pair<>(bulletX, bulletY);
+    }
+
+    public void setSpeedFactor(int factor) {
+        speedFactor = factor / 100.0f;
+        setMoving(speedFactor > 0);
+        speed = 200.0f * speedFactor;
     }
 }

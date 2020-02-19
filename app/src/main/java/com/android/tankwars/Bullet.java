@@ -9,10 +9,11 @@ public class Bullet extends GameObject {
     private int id;
 
 
-    Bullet(float x, float y, float direction){
-        super(x,y, 4.0f,4.0f);
+    Bullet(float x, float y, float rotation){
+        super(x,y, 20.0f,20.0f);
         id = ID; ID++;
-        this.rotation = direction;
+        this.rotation = rotation;
+        setDirectionVector();
         speed = 500.0f;
         color = new Paint();
         color.setColor(Color.argb(255, 255, 100, 100));
@@ -21,10 +22,9 @@ public class Bullet extends GameObject {
     @Override
     public void collision(GameObject otherObject) {
         speed = 0;
-        if(otherObject.getClass() == Obstacle.class)
-        {
+        if(otherObject.getClass() == Obstacle.class) {
             /* TODO
-            * maybe concurrent modification links to here?
+            * Implement logic here for what to happen if a player is hit by a bullet
             * */
         }
         toBeRemoved.add(this);

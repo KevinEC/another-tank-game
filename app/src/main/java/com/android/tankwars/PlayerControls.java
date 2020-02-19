@@ -5,6 +5,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+
+import io.github.controlwear.virtual.joystick.android.JoystickView;
 
 public class PlayerControls {
 
@@ -15,59 +18,66 @@ public class PlayerControls {
     private Button mUp;
     private Button mDown;
     private Button mFire;
-    private ArrayMap<String, Button> mControls;
+    private JoystickView mJoystick;
+    private LinearLayout mControlsView;
+    private ArrayMap<String, View> mControls;
 
-    PlayerControls(ArrayMap<String, Button> controls, PlayerTank playerTank) {
+    PlayerControls(ArrayMap<String, View> controls, PlayerTank playerTank) {
         mPlayerTank = playerTank;
         mControls = controls;
-        mLeft = controls.get("left");
-        mRight = controls.get("right");
-        mUp = controls.get("up");
-        mDown = controls.get("down");
-        mFire = controls.get("fire");
+
+        mLeft = (Button) controls.get("left");
+        mRight = (Button)controls.get("right");
+        mUp = (Button) controls.get("up");
+        mDown = (Button) controls.get("down");
+        mFire = (Button) controls.get("fire");
+        mJoystick = (JoystickView) controls.get("joystick");
+        mControlsView = (LinearLayout) controls.get("controlArea");
 
         mLeft.setOnTouchListener(buttonListener);
         mRight.setOnTouchListener(buttonListener);
         mUp.setOnTouchListener(buttonListener);
         mDown.setOnTouchListener(buttonListener);
         mFire.setOnTouchListener(buttonListener);
+
+        mJoystick.setOnMoveListener(joystickOnMoveListener);
+        mControlsView.setOnTouchListener(controlAreaTouchListener);
+
     }
+
+
+
+    private LinearLayout.OnTouchListener controlAreaTouchListener = new LinearLayout.OnTouchListener(){
+        @Override
+        public boolean onTouch(View v, MotionEvent e) {
+            Log.d("joystick", "touch registered in linear layout");
+            if (e.getAction() == MotionEvent.ACTION_DOWN)
+                mPlayerTank.setMoving(true);
+            else if (e.getAction() == MotionEvent.ACTION_UP)
+                mPlayerTank.setMoving(false);
+            return true;
+        }
+    };
+
+    private JoystickView.OnMoveListener joystickOnMoveListener = new JoystickView.OnMoveListener() {
+        @Override
+        public void onMove(int angle, int strength) {
+            if(strength > 0) mPlayerTank.setRotation(-angle);
+            mPlayerTank.setSpeedFactor(strength);
+        }
+    };
 
     private View.OnTouchListener buttonListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent e) {
 
-            Log.d("PlayerControls", "touch registered");
-
             // set playerTank move state determined on touch action
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
-
-                // determine which button is pressed
-                if (v.getId() == mLeft.getId()) {
-                    mPlayerTank.setMoving(true);
-                    mPlayerTank.setRotation(180);
-                } else if (v.getId() == mRight.getId()) {
-                    mPlayerTank.setMoving(true);
-                    mPlayerTank.setRotation(0);
-                } else if (v.getId() == mUp.getId()) {
-                    mPlayerTank.setMoving(true);
-                    mPlayerTank.setRotation(270);
-                } else if (v.getId() == mDown.getId()) {
-                    mPlayerTank.setMoving(true);
-                    mPlayerTank.setRotation(90);
-                }
-
-                // should be able to be pressed simultaneously
                 if (v.getId() == mFire.getId()) {
                     mPlayerTank.setFireInput(true);
+                    Log.d("fire", "fireInput set to true");
                 }
             } else if (e.getAction() == MotionEvent.ACTION_UP) {
-                if (v.getId() == mLeft.getId() || v.getId() == mRight.getId() ||
-                        v.getId() == mUp.getId() || v.getId() == mDown.getId()) {
-                    mPlayerTank.setMoving(false);
-                }
-
-
                 if (v.getId() == mFire.getId()) {
                     mPlayerTank.setFireInput(false);
                 }
