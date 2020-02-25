@@ -6,7 +6,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.Log;
 import android.util.Pair;
@@ -16,35 +15,19 @@ import java.util.ArrayList;
 
 public class PlayerTank extends GameObject{
 
-    public final int LEFT = 1;
-    public final int RIGHT = 2;
-    public final int UP = 3;
-    public final int DOWN = 4;
-    public final int FIRE = 5;
-
     private TankWarsActivity activity;
 
-    //private RectF rect;
     private Bitmap bitmap;
     private Bitmap bitmapOrigin;
     private float bitmapWidth;
     private float bitmapHeight;
 
-    //private float width, height;
-
     private float mScreenX, mScreenY;
-
-    //private float x, y;
-
-    //private float tankSpeed;
 
     private ArrayList<Bullet> playerBullets;
 
     private boolean moving = false;
     private boolean parseMovementInput = true;
-    // int representing the current rotation.
-    // Initial rotation UP.
-    private int playerInput = UP;
 
     private boolean firing = false;
     private long fireCooldown = 150;
@@ -85,9 +68,6 @@ public class PlayerTank extends GameObject{
         }
         if(firing && cooldown == 0) fire();
         updateFireCooldown();
-
-        // update player bullets
-        updateBullets(fps);
     }
 
     public Bitmap getBitmap() {
@@ -96,12 +76,6 @@ public class PlayerTank extends GameObject{
 
     public ArrayList<Bullet> getPlayerBullets() {
         return playerBullets;
-    }
-
-    private void updateBullets(long fps){
-        for (Bullet bullet : playerBullets) {
-            bullet.update(fps);
-        }
     }
 
     public void setMoving(boolean moving) { this.moving = moving; }

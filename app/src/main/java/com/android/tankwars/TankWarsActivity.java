@@ -5,14 +5,10 @@ import android.app.Activity;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.util.ArrayMap;
-import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.Button;
-
-import io.github.controlwear.virtual.joystick.android.JoystickView;
 
 public class TankWarsActivity extends Activity {
 
@@ -31,6 +27,8 @@ public class TankWarsActivity extends Activity {
         // add view for controls
         LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         View controlsView = LayoutInflater.from(this).inflate(R.layout.controls, null, false);
+
+        // need to add this here so the buttons can be referenced before the tankWarsView is created
         addContentView(controlsView, lp);
 
         controls = new ArrayMap<>();

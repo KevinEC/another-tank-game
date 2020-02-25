@@ -1,18 +1,13 @@
 package com.android.tankwars;
 
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.Log;
 import android.util.Pair;
 
 import java.util.ArrayList;
-import java.util.MissingFormatArgumentException;
 
 public abstract class GameObject{
-
-    // for debugging
-    RectF tempThisRect, tempOtherRect;
 
     protected long fps;
     protected float x, y;
@@ -99,6 +94,10 @@ public abstract class GameObject{
         setDirectionVector();
     }
 
+    public float getRotation() {
+        return rotation;
+    }
+
     protected void setDirectionVector(){
         float x = (float) Math.cos(Math.toRadians(rotation));
         float y = (float) Math.sin(Math.toRadians(rotation));
@@ -123,9 +122,5 @@ public abstract class GameObject{
         rect.bottom = y + height;
         rect.left = x;
         rect.right = x + width;
-    }
-
-    public float getRotation() {
-        return rotation;
     }
 }

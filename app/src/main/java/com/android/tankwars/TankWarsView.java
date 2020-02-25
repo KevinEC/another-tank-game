@@ -14,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.Button;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,13 +71,12 @@ public class TankWarsView extends SurfaceView implements Runnable {
         this.context = context;
 
         mControls = controls;
-
         holder = getHolder();
         paint = new Paint();
 
         screenX = x;  screenY = y;
 
-        mapObstacles = new ArrayList<Obstacle>();
+        mapObstacles = new ArrayList<>();
 
         // deprecated but still works
         soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
@@ -153,9 +151,7 @@ public class TankWarsView extends SurfaceView implements Runnable {
     private void update(long fps) {
         boolean lost = false;
 
-        playerTank.update(fps);
         updateGameObjects(fps);
-
         if (lost) {
             prepareLevel();
         }
@@ -166,7 +162,7 @@ public class TankWarsView extends SurfaceView implements Runnable {
             canvas = holder.lockCanvas();
 
             // color background and set brush color
-            canvas.drawColor(Color.argb(255, 86, 128, 182));
+            canvas.drawColor(Color.argb(255, 20, 20, 20));
             paint.setColor(Color.argb(255, 255, 255, 255));
 
             // draw player
@@ -174,9 +170,12 @@ public class TankWarsView extends SurfaceView implements Runnable {
 
             //draw GameObjects
             for(GameObject object: GameObject.allGameObjects) {
+                // prepare canvas for transformations
                 canvas.save();
                 canvas.rotate(object.getRotation(), object.getRect().centerX(), object.getRect().centerY());
+                // draw GameObject in transformed state
                 canvas.drawRect(object.getRect(), object.color);
+                // restore the canvas transformation
                 canvas.restore();
             }
 
@@ -211,25 +210,5 @@ public class TankWarsView extends SurfaceView implements Runnable {
         // remove GameObjects here to avoid ConcurrentModificationException.
         GameObject.allGameObjects.removeAll(GameObject.toBeRemoved);
         GameObject.toBeRemoved.clear();
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent motionEvent) {
-
-        switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-
-            case MotionEvent.ACTION_DOWN:
-                //Log.d("TOUCH: ", "action down. Playing: " + playing);
-                //playerTank.setMoving(true);
-
-                break;
-
-            case MotionEvent.ACTION_UP:
-                //Log.d("TOUCH: ", "action up");
-                //playerTank.setMoving(false);
-
-                break;
-        }
-        return true;
     }
 }
