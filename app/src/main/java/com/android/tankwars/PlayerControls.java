@@ -44,7 +44,6 @@ public class PlayerControls {
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
                 if (v.getId() == mFire.getId()) {
                     mPlayerTank.setFireInput(true);
-                    Log.d("fire", "fireInput set to true");
                 }
             } else if (e.getAction() == MotionEvent.ACTION_UP) {
                 if (v.getId() == mFire.getId()) {

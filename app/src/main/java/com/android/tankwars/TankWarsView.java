@@ -17,6 +17,7 @@ import android.view.View;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class TankWarsView extends SurfaceView implements Runnable {
     Context context;
@@ -43,6 +44,8 @@ public class TankWarsView extends SurfaceView implements Runnable {
 
     // Screen size in pixels
     private int screenX, screenY;
+
+    Camera camera;
 
     //Player Tank
     private PlayerTank playerTank;
@@ -98,21 +101,18 @@ public class TankWarsView extends SurfaceView implements Runnable {
 
     private void prepareLevel() {
 
-        playerTank = new PlayerTank(context, screenX, screenY);
+        playerTank = new PlayerTank(context, screenX, screenY, 1);
         playerControls = new PlayerControls(mControls, playerTank);
+        camera = new Camera(screenX / 2.0f,screenY / 2.0f);
 
 
-        Obstacle screenBorderTop = new Obstacle(0, 0, screenX, 1);
-        screenBorderTop.color.setColor(Color.argb(0, 100, 0,0));
+        Obstacle screenBorderTop = new Obstacle(0, 0, screenX-200, 5);
 
-        Obstacle screenBorderBot = new Obstacle(0, screenY, screenX, 1);
-        screenBorderBot.color.setColor(Color.argb(0, 100, 0,0));
+        Obstacle screenBorderBot = new Obstacle(0, screenY, screenX, 5);
 
-        Obstacle screenBorderLeft = new Obstacle(0, 0, 1, screenY);
-        screenBorderLeft.color.setColor(Color.argb(0, 100, 0,0));
+        Obstacle screenBorderLeft = new Obstacle(0, 0, 5, screenY-100);
 
-        Obstacle screenBorderRight = new Obstacle(screenX, 0, 1, screenY);
-        screenBorderTop.color.setColor(Color.argb(0, 100, 0,0));
+        Obstacle screenBorderRight = new Obstacle(screenX, 0, 5, screenY-500);
 
         mapObstacles.add(new Obstacle(400, 200, 30, 200));
         mapObstacles.add(new Obstacle(1200, 800, 300, 30));
@@ -136,7 +136,6 @@ public class TankWarsView extends SurfaceView implements Runnable {
             if (!paused) {
                 update(fps);
             }
-
             // Draw the frame
             draw();
 
@@ -172,9 +171,12 @@ public class TankWarsView extends SurfaceView implements Runnable {
             for(GameObject object: GameObject.allGameObjects) {
                 // prepare canvas for transformations
                 canvas.save();
+                // translate GameObject by camera coordinates
+                canvas.translate(-camera.getX(), -camera.getY());
+                // rotate GameObject
                 canvas.rotate(object.getRotation(), object.getRect().centerX(), object.getRect().centerY());
                 // draw GameObject in transformed state
-                canvas.drawRect(object.getRect(), object.color);
+                object.draw(canvas);
                 // restore the canvas transformation
                 canvas.restore();
             }
@@ -203,9 +205,10 @@ public class TankWarsView extends SurfaceView implements Runnable {
         // add GamObjects here to avoid ConcurrentModificationException.
         GameObject.allGameObjects.addAll(GameObject.toBeAdded);
         GameObject.toBeAdded.clear();
+        Collections.sort(GameObject.allGameObjects);
+        camera.update(playerTank, screenX, screenY);
         for (GameObject object : GameObject.allGameObjects){
             object.update(fps);
-            object.setFps(fps);
         }
         // remove GameObjects here to avoid ConcurrentModificationException.
         GameObject.allGameObjects.removeAll(GameObject.toBeRemoved);

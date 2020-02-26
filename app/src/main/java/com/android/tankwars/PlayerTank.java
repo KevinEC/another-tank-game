@@ -17,6 +17,8 @@ public class PlayerTank extends GameObject{
 
     private TankWarsActivity activity;
 
+    private int playerID;
+
     private Bitmap bitmap;
     private Bitmap bitmapOrigin;
     private float bitmapWidth;
@@ -29,25 +31,26 @@ public class PlayerTank extends GameObject{
     private boolean moving = false;
     private boolean parseMovementInput = true;
 
+
     private boolean firing = false;
     private long fireCooldown = 150;
     private  long fireCooldownFinish;
     private long cooldown = 0;
+
     private float speedFactor;
 
-    public PlayerTank(Context context, int screenX, int screenY) {
+    private ParticleSystem leftTrail, rightTrail;
+
+    public PlayerTank(Context context, int screenX, int screenY, int playerID) {
         super(screenX / 2, screenY / 2, screenY / 10, screenY / 10);
         activity = (TankWarsActivity) context;
         mScreenX = screenX; mScreenY = screenY;
         bitmapWidth = width; bitmapHeight = height;
-        x = screenY / 2;
-        y = screenY / 2;
 
         speedFactor = 0.0f;
         speed = 0.0f * speedFactor;
         playerBullets = new ArrayList<>();
-        color = new Paint();
-        color.setColor(Color.argb(255, 20, 200, 40));
+        setColor(Color.argb(255, 20, 200, 40));
 
         bitmapOrigin = BitmapFactory.decodeResource(context.getResources(), R.drawable.tank2);
         // Scale bitmap to tank size
@@ -55,16 +58,44 @@ public class PlayerTank extends GameObject{
         bitmapOrigin = Bitmap.createScaledBitmap(bitmapOrigin, (int) (width), (int) (height), false);
         // set current bitmap
         bitmap = Bitmap.createScaledBitmap(bitmapOrigin, (int) (width), (int) (height), false);
+
+        this.playerID = playerID;
+        leftTrail = initTrail();
+        rightTrail = initTrail();
+    }
+
+    private ParticleSystem initTrail(){
+        int spread = 40;
+        Pair<Float, Float> directionRange = new Pair(rotation-spread, rotation+spread);
+        Pair<Float, Float> spinRange = new Pair(20.0f, 90.0f);
+        Pair<Float, Float> sizeRange = new Pair(6.0f, 10.0f);
+        Pair<Float, Float> distanceRange = new Pair(70.0f, 220.0f);
+        Pair<Float, Float> speedRange = new Pair(20.0f, 50.0f);
+        Pair<Float, Float> lifetimeRange = new Pair(20.0f, 80.0f);
+        int spawnrate = 1;
+        int color = Color.argb(255, 80, 40, 30);
+
+        ParticleSystem sys = new ParticleSystem(getRect().centerX(), getRect().centerY(),directionRange,spinRange, sizeRange, distanceRange, speedRange, lifetimeRange, spawnrate, color);
+        sys.setTransform(true);
+        return sys;
     }
 
     @Override
     public void collision(GameObject otherObject) {
-        bouncePlayerBack();
+        setCollided(true);
+        if(otherObject instanceof Bullet && ((Bullet) otherObject).getPlayer().equals(this)) {
+            Log.d("collision", "collided with own bullet");
+        }
+        else {
+            bouncePlayerBack();
+        }
     }
 
     public void update(long fps) {
         if (parseMovementInput && moving) {
             translate(fps);
+            leftTrail.update(fps);
+            rightTrail.update(fps);
         }
         if(firing && cooldown == 0) fire();
         updateFireCooldown();
@@ -78,7 +109,25 @@ public class PlayerTank extends GameObject{
         return playerBullets;
     }
 
-    public void setMoving(boolean moving) { this.moving = moving; }
+    public void setMoving(boolean moving) {
+        this.moving = moving;
+        setTrail(moving, rightTrail, true);
+        setTrail(moving, leftTrail, false);
+    }
+
+    private void setTrail(boolean state, ParticleSystem trail, boolean rightTrail) {
+        trail.setSpawnParticles(state);
+        trail.setDirectionRange(new Pair<>(getRotation() + 180 - 20, getRotation() + 180 + 20));
+        trail.setCoordinates(new Pair<>(getRect().left, getRect().bottom));
+        if(rightTrail)
+            trail.setTransformationRotation(getRotation() + 225);
+        else
+            trail.setTransformationRotation(getRotation() + 135);
+        trail.setTransformationRotationOrigin(new Pair<>(getRect().centerX(), getRect().centerY()));
+        float rectW = getWidth() / 2.0f;
+        float diagonal = (float) Math.sqrt((2.0f*Math.pow(rectW, 2)));
+        trail.setTransformationRotationTranslation(diagonal);
+    }
 
     public void setFireInput(boolean state) {
         firing = state;
@@ -103,7 +152,6 @@ public class PlayerTank extends GameObject{
                     public void onAnimationUpdate(ValueAnimator animation) {
                         float xValue = (float) xAnim.getAnimatedValue();
                         float yValue = (float) yAnim.getAnimatedValue();
-                        Log.d("Collision", "(xValue,yValue): (" + xValue + ", " + yValue + ")");
                         setCoordinate(new Pair<>(xValue, yValue));
                     }
                 });
@@ -136,7 +184,7 @@ public class PlayerTank extends GameObject{
 
     private void fire() {
         Pair bulletXY = calcBulletCoordinate();
-        Bullet newBullet = new Bullet((float) bulletXY.first, (float) bulletXY.second, rotation);
+        Bullet newBullet = new Bullet((float) bulletXY.first, (float) bulletXY.second, rotation, this);
         playerBullets.add(newBullet);
         startFireCooldown();
     }
@@ -169,8 +217,12 @@ public class PlayerTank extends GameObject{
     }
 
     public void setSpeedFactor(int factor) {
-        speedFactor = factor / 100.0f;
+        speedFactor = factor / 10.0f; // [0,10]
         setMoving(speedFactor > 0);
-        speed = 200.0f * speedFactor;
+        // weird math stuff for easing
+        speed = 100.0f + (float) Math.pow(speed, speedFactor / 10.0f);
+        // max speed
+        if(speed > 500.0f)
+            speed = 500.0f;
     }
 }
